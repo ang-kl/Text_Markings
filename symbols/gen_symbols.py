@@ -44,19 +44,22 @@ def dot(x, y, r, c):
 def rectpts(x, y, w, h): return [(x, y), (x+w, y), (x+w, y+h), (x, y+h)]
 
 def cloudpts(b):
-    x, y, w, h = b; cx, cy = x+w/2, y+h/2; rx, ry = w/2+8, h/2+7
-    n = max(8, round((w+h)/16)); pts = []
-    for i in range(n):
-        t = math.pi*2*i/n; lobe = 1+0.17*math.cos(n*t)
-        pts.append((cx+math.cos(t)*rx*lobe, cy+math.sin(t)*ry*lobe))
+    x, y, w, h = b; cx, cy = x+w/2, y+h/2; rx, ry = w/2+10, h/2+11
+    lobes = max(6, min(11, round((w+h)/24)))
+    steps = lobes*7; pts = []
+    for i in range(steps):
+        t = math.pi*2*i/steps
+        bump = 0.5 - 0.5*math.cos(lobes*t)
+        r = 1 + 0.26*bump
+        pts.append((cx+math.cos(t)*rx*r, cy+math.sin(t)*ry*r))
     return pts
 
 INNER = (27, 24, 76, 17)
 C = (65, 32)
 
 def enc_triangle(c):
-    x, y, w, h = INNER; p = 8
-    return stroke([(x+w/2, y-p-2), (x-p, y+h+p), (x+w+p, y+h+p)], True, c, 1.8)
+    x, y, w, h = INNER; p = 6
+    return stroke([(x+w/2, y-p-4), (x-p, y+h+p), (x+w+p, y+h+p)], True, c, 1.8)
 def rising(c):
     x, y, w, h = INNER
     return stroke([(x-2, y+h+5), (x+w+8, y+h-7)], False, c, 2.2, amp=1.0)
@@ -189,19 +192,30 @@ def repent_arrow(c):
     out += stroke([(cx-6, cy-6), (cx-1, cy+1)], False, c, 1.8)
     return out
 def book(c):
-    cx, cy = C
-    out = stroke([(cx, cy-9), (cx-15, cy-6), (cx-15, cy+9), (cx, cy+8)], False, c, 1.6)
-    out += stroke([(cx, cy-9), (cx+15, cy-6), (cx+15, cy+9), (cx, cy+8)], False, c, 1.6)
-    out += stroke([(cx, cy-9), (cx, cy+8)], False, c, 1.6)
+    cx, cy = C; s = 13
+    out = stroke([(cx, cy-s*0.8), (cx-s*1.25, cy-s*0.35), (cx-s*1.25, cy+s*0.6), (cx, cy+s*0.35)], True, c, 1.5)
+    out += stroke([(cx, cy-s*0.8), (cx+s*1.25, cy-s*0.35), (cx+s*1.25, cy+s*0.6), (cx, cy+s*0.35)], True, c, 1.5)
     return out
 def swoosh(c):
     cx, cy = C
     return stroke([(cx+8, cy-10), (cx-4, cy-8), (cx-9, cy+1), (cx-3, cy+9), (cx+4, cy+6)], False, c, 2.0, amp=0.9)
 
+def spirit(c, hl):
+    x, y, w, h = INNER
+    out = P(roughD(rectpts(x - 2, y - 2, w + 4, h + 4), True, 1.0), fill=hl, op=0.30)
+    apexX = x + w * 0.24; apexY = y - 16; endX = x + w + 4; endY = y + h * 0.30; nb = 2.0; amp = 7.0
+    pts = [(x - 3, y + h * 0.45), (apexX, apexY)]
+    steps = 26
+    for s in range(1, steps + 1):
+        t = s / steps; px = apexX + (endX - apexX) * t
+        base = apexY + (endY - apexY) * t
+        pts.append((px, base - amp * (0.5 - 0.5 * math.cos(2 * math.pi * nb * t))))
+    return out + stroke(pts, False, c, 1.6, amp=0.5)
+
 SYMS = [
     ("god", "God", lambda: enc_triangle(PAL["purple"])),
     ("jesus", "Jesus Christ / Son", lambda: rising(PAL["purple"])),
-    ("spirit", "Spirit (Holy Spirit)", lambda: cloud(PAL["amber"])),
+    ("spirit", "Spirit (Holy Spirit)", lambda: spirit(PAL["purple"], PAL["yellow"])),
     ("holy", "holy", lambda: cloud(PAL["gold"], fill=PAL["yellow"])),
     ("unholy", "unholy", lambda: cloud(PAL["gold"], fill=PAL["yellow"]) + slash(PAL["red"])),
     ("covenant", "covenant", lambda: box(PAL["red"], fill=PAL["yellow"])),

@@ -56,15 +56,23 @@
   }
   function rectpts(x, y, w, h) { return [[x, y], [x + w, y], [x + w, y + h], [x, y + h]]; }
   function cloudpts(b) {
-    var cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + 8, ry = b.h / 2 + 7, n = Math.max(8, Math.round((b.w + b.h) / 16)), p = [];
-    for (var i = 0; i < n; i++) { var t = Math.PI * 2 * i / n, lobe = 1 + 0.17 * Math.cos(n * t); p.push([cx + Math.cos(t) * rx * lobe, cy + Math.sin(t) * ry * lobe]); }
+    var cx = b.x + b.w / 2, cy = b.y + b.h / 2, rx = b.w / 2 + 10, ry = b.h / 2 + 11;
+    var lobes = Math.max(6, Math.min(11, Math.round((b.w + b.h) / 24))), steps = lobes * 7, p = [];
+    for (var i = 0; i < steps; i++) { var t = Math.PI * 2 * i / steps, bump = 0.5 - 0.5 * Math.cos(lobes * t), r = 1 + 0.26 * bump; p.push([cx + Math.cos(t) * rx * r, cy + Math.sin(t) * ry * r]); }
     return p;
   }
-  function gpos(b) { var s = Math.max(9, Math.min(14, b.h * 0.85)); return { cx: b.x + b.w / 2, cy: b.y - s - 4, s: s }; }
+  function gpos(b) { var s = Math.max(10, Math.min(15, b.h * 0.95)); return { cx: b.x + b.w / 2, cy: b.y - s - 4, s: s }; }
 
-  function enc_triangle(svg, b, c) { var p = 8; strokeS(svg, [[b.x + b.w / 2, b.y - p - 2], [b.x - p, b.y + b.h + p], [b.x + b.w + p, b.y + b.h + p]], true, { stroke: c, sw: 1.8 }); }
+  function enc_triangle(svg, b, c) { var p = 6; strokeS(svg, [[b.x + b.w / 2, b.y - p - 4], [b.x - p, b.y + b.h + p], [b.x + b.w + p, b.y + b.h + p]], true, { stroke: c, sw: 1.8 }); }
   function rising(svg, b, c) { strokeS(svg, [[b.x - 2, b.y + b.h + 5], [b.x + b.w + 8, b.y + b.h - 7]], false, { stroke: c, sw: 2.2, amp: 1.0 }); }
   function cloud(svg, b, c, fill, fop) { strokeS(svg, cloudpts(b), true, { stroke: c, sw: 1.5, fillColor: fill, fillOp: fop || 0.28 }); }
+  function spirit(svg, b, c, hl) {
+    pathEl(svg, roughD(rectpts(b.x - 2, b.y - 2, b.w + 4, b.h + 4), true, 1.0), { fill: hl, op: 0.30 });
+    var apexX = b.x + b.w * 0.24, apexY = b.y - 16, endX = b.x + b.w + 4, endY = b.y + b.h * 0.30, nb = 2.0, amp = 7.0;
+    var pts = [[b.x - 3, b.y + b.h * 0.45], [apexX, apexY]];
+    for (var s = 1; s <= 26; s++) { var t = s / 26, px = apexX + (endX - apexX) * t, base = apexY + (endY - apexY) * t; pts.push([px, base - amp * (0.5 - 0.5 * Math.cos(2 * Math.PI * nb * t))]); }
+    strokeS(svg, pts, false, { stroke: c, sw: 1.6, amp: 0.5 });
+  }
   function box(svg, b, c, fill, fop) { strokeS(svg, rectpts(b.x - 4, b.y - 4, b.w + 8, b.h + 8), true, { stroke: c, sw: 1.7, fillColor: fill, fillOp: fop || 0.3 }); }
   function underline(svg, b, c, dbl) { strokeS(svg, [[b.x - 2, b.y + b.h + 5], [b.x + b.w + 4, b.y + b.h + 5]], false, { stroke: c, sw: 1.8 }); if (dbl) strokeS(svg, [[b.x - 2, b.y + b.h + 9], [b.x + b.w + 4, b.y + b.h + 9]], false, { stroke: c, sw: 1.6 }); }
   function wavy(svg, b, c) { var pts = [], n = 30; for (var i = 0; i <= n; i++) pts.push([b.x - 2 + (b.w + 6) * i / n, b.y + b.h + 6 + Math.sin(i / n * Math.PI * 5) * 2.5]); strokeS(svg, pts, false, { stroke: c, sw: 1.7, amp: 0.5 }); }
@@ -79,7 +87,7 @@
   function atonement(svg, b, c) { pathEl(svg, roughD(rectpts(b.x - 3, b.y - 2, b.w + 6, b.h + 5), true, 1.0), { fill: PAL.lyellow, op: 0.5 }); arch_over(svg, b, c); }
   function pray(svg, b, c) { var pts = [], n = 5, base = b.y + b.h + 7; for (var i = 0; i <= n * 6; i++) { var t = i / (n * 6); pts.push([b.x - 2 + (b.w + 6) * t, base - Math.abs(Math.sin(t * Math.PI * n)) * 3]); } strokeS(svg, pts, false, { stroke: c, sw: 1.7, amp: 0.4 }); }
   function heart(svg, b, c, fill) {
-    var cx = b.x + b.w / 2, cy = b.y + b.h / 2, W = b.w + 26, H = b.h + 28, raw = [];
+    var cx = b.x + b.w / 2, cy = b.y + b.h / 2, W = b.w + 18, H = b.h + 22, raw = [];
     for (var i = 0; i <= 60; i++) { var t = Math.PI * 2 * i / 60; raw.push([16 * Math.pow(Math.sin(t), 3), -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))]); }
     var xs = raw.map(function (p) { return p[0]; }), ys = raw.map(function (p) { return p[1]; });
     var mnx = Math.min.apply(0, xs), mxx = Math.max.apply(0, xs), mny = Math.min.apply(0, ys), mxy = Math.max.apply(0, ys);
@@ -97,7 +105,7 @@
   function ear(svg, cx, cy, s, c) { strokeS(svg, [[cx + s * 0.55, cy - s * 0.85], [cx - s * 0.4, cy - s * 0.85], [cx - s * 0.85, cy - s * 0.3], [cx - s * 0.6, cy + s * 0.4], [cx - s * 0.15, cy + s * 0.8], [cx + s * 0.4, cy + s * 0.7]], false, { stroke: c, sw: 1.8 }); strokeS(svg, [[cx + s * 0.15, cy - s * 0.35], [cx - s * 0.25, cy - s * 0.2], [cx - s * 0.2, cy + s * 0.2], [cx + s * 0.15, cy + s * 0.3]], false, { stroke: c, sw: 1.5 }); }
   function pitchfork(svg, cx, cy, s, c) { strokeS(svg, [[cx, cy + s], [cx, cy - s * 0.45]], false, { stroke: c, sw: 1.9 }); strokeS(svg, [[cx - s * 0.7, cy - s], [cx - s * 0.7, cy - s * 0.25]], false, { stroke: c, sw: 1.7 }); strokeS(svg, [[cx, cy - s * 1.15], [cx, cy - s * 0.25]], false, { stroke: c, sw: 1.7 }); strokeS(svg, [[cx + s * 0.7, cy - s], [cx + s * 0.7, cy - s * 0.25]], false, { stroke: c, sw: 1.7 }); strokeS(svg, [[cx - s * 0.7, cy - s * 0.25], [cx + s * 0.7, cy - s * 0.25]], false, { stroke: c, sw: 1.7 }); }
   function repent_arrow(svg, cx, cy, s, c) { strokeS(svg, [[cx + s, cy - s * 0.45], [cx + s, cy + s * 0.6], [cx - s * 0.45, cy + s * 0.6], [cx - s * 0.45, cy - s * 0.45]], false, { stroke: c, sw: 1.9 }); strokeS(svg, [[cx - s * 0.45, cy - s * 0.45], [cx - s * 0.85, cy + s * 0.08]], false, { stroke: c, sw: 1.8 }); strokeS(svg, [[cx - s * 0.45, cy - s * 0.45], [cx - s * 0.05, cy + s * 0.08]], false, { stroke: c, sw: 1.8 }); }
-  function book(svg, cx, cy, s, c) { strokeS(svg, [[cx, cy - s * 0.65], [cx - s, cy - s * 0.45], [cx - s, cy + s * 0.65], [cx, cy + s * 0.55]], false, { stroke: c, sw: 1.6 }); strokeS(svg, [[cx, cy - s * 0.65], [cx + s, cy - s * 0.45], [cx + s, cy + s * 0.65], [cx, cy + s * 0.55]], false, { stroke: c, sw: 1.6 }); strokeS(svg, [[cx, cy - s * 0.65], [cx, cy + s * 0.55]], false, { stroke: c, sw: 1.6 }); }
+  function book(svg, cx, cy, s, c) { strokeS(svg, [[cx, cy - s * 0.8], [cx - s * 1.25, cy - s * 0.35], [cx - s * 1.25, cy + s * 0.6], [cx, cy + s * 0.35]], true, { stroke: c, sw: 1.5 }); strokeS(svg, [[cx, cy - s * 0.8], [cx + s * 1.25, cy - s * 0.35], [cx + s * 1.25, cy + s * 0.6], [cx, cy + s * 0.35]], true, { stroke: c, sw: 1.5 }); }
   function swoosh(svg, cx, cy, s, c) { strokeS(svg, [[cx + s * 0.55, cy - s * 0.7], [cx - s * 0.3, cy - s * 0.55], [cx - s * 0.6, cy + s * 0.08], [cx - s * 0.2, cy + s * 0.65], [cx + s * 0.3, cy + s * 0.45]], false, { stroke: c, sw: 2.0, amp: 0.9 }); }
 
   function draw(svg, type, b) {
@@ -106,7 +114,7 @@
     switch (type) {
       case "god": return enc_triangle(svg, b, PAL.purple);
       case "jesus": return rising(svg, b, PAL.purple);
-      case "spirit": return cloud(svg, b, PAL.amber);
+      case "spirit": return spirit(svg, b, PAL.purple, PAL.yellow);
       case "holy": return cloud(svg, b, PAL.gold, PAL.yellow);
       case "unholy": cloud(svg, b, PAL.gold, PAL.yellow); return slash(svg, b, PAL.red);
       case "covenant": return box(svg, b, PAL.red, PAL.yellow);

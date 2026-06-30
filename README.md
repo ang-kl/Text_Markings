@@ -1,1 +1,10 @@
-###  slow-down and the drawing/colouring with symbols and underlining are the practical engine of Observation. The slow-down is deliberate: read a book repeatedly for the overview, then chapter by chapter, refusing to move quickly. The marking system makes the unseen visible - you assign a consistent colour and/or symbol to each key word and mark it every time it appears (e.g. a coloured triangle for references to God/the Trinity, a distinct mark for "faith", "covenant", or "law"), double-underline geographical locations in green, and flag references to time so the text's rhythms surface on the page. Precept offers suggested conventions but expects each student to build a personal, consistent legend. The marking is not decoration; it is structured attention that forces you to notice what you would otherwise skim past.
+# Text Markings
+
+Hand-drawn Precept-style key-word marking of Bible text.
+
+- `engine/` — the marking engine (`markings.js`), a worked demo, and docs.
+- `symbols/` — the 41 marks as transparent SVG stamps, plus `gen_symbols.py` (the deterministic generator) and `assets/manifest.json`.
+
+Tag a word with `data-m="<id>"` (ids match `symbols/assets/manifest.json`), load `engine/markings.js`, and call `TextMarkings.apply('#passage')`. See `engine/README.md`.
+
+Live demo (GitHub Pages): `/engine/demo.html`.
